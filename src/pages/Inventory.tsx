@@ -87,55 +87,72 @@ export default function Inventory() {
               <thead><tr className="table-head border-b border-border"><th className="p-4">Item</th><th className="p-4">Unit</th><th className="p-4">Purchase</th><th className="p-4">Selling</th><th className="p-4">Stock</th><th className="p-4">Supplier</th><th className="p-4 text-right">Actions</th></tr></thead>
               <tbody className="divide-y divide-border">
                 {isPending && !products ? <tr><td colSpan={7}><TableSkeleton cols={7} /></td></tr> : stockItems.map((p, i) => (
-                  <m.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i, 12) * 0.03 }} className="hover:bg-background/60">
-                    <td className="p-4 font-semibold">{displayName(p)}<span className="ml-2 text-[10px] uppercase text-muted">{p.category}</span></td>
+                  <m.tr key={p.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 12) * 0.025 }} className="hover:bg-primary-soft/30 hover:translate-x-1 transition-all duration-150">
+                    <td className="p-4 font-semibold text-foreground">{displayName(p)}<span className="ml-2 text-[10px] uppercase font-bold text-muted bg-secondary-soft px-2 py-0.5 rounded-full">{p.category}</span></td>
                     <td className="p-4 text-muted">{p.unit}</td>
                     <td className="p-4 text-muted">{formatCurrency(p.purchase_price)}</td>
-                    <td className="p-4 font-medium">{formatCurrency(p.selling_price)}</td>
-                    <td className="p-4"><span className={cn("stock-badge", p.stock <= 20 ? "bg-danger-soft text-danger" : "bg-secondary-soft text-secondary")}>{p.stock}</span></td>
-                    <td className="p-4 text-muted">{p.supplier}</td>
+                    <td className="p-4 font-bold text-foreground">{formatCurrency(p.selling_price)}</td>
+                    <td className="p-4">
+                      <span className={cn("stock-badge font-bold", p.stock <= 20 ? "bg-primary-soft text-primary border border-primary-border/60" : "bg-secondary-soft text-foreground border border-border")}>
+                        {p.stock}
+                      </span>
+                    </td>
+                    <td className="p-4 text-muted">{p.supplier || "—"}</td>
                     <td className="p-4"><div className="flex justify-end gap-1">
                       <button onClick={() => openEdit(p)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Edit"><Pencil className="w-4 h-4" /></button>
-                      <button onClick={() => remove(p)} className={cn(iconBtn, "hover:text-danger hover:bg-danger-soft")} aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => remove(p)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
                     </div></td>
                   </m.tr>
                 ))}
-                {!isPending && stockItems.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-muted">No items yet.</td></tr>}
               </tbody>
             </table>
           </div>
+          {!isPending && stockItems.length === 0 && <p className="text-center text-muted p-12">No stock items found.</p>}
         </div>
       )}
 
       {tab === "bouquets" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {isPending && !products ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-44" />) : bouquets.map((b, i) => {
-            const rows = (recipes ?? []).filter((r) => r.bouquet_id === b.id);
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {isPending && !products ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />) : bouquets.map((b, i) => {
             const a = availMap.get(b.id);
-            const cost = rows.reduce((s, r) => s + r.quantity * (byId.get(r.component_id)?.purchase_price ?? 0), 0);
+            const can = a?.can_make ?? 0;
+            const bRecipes = (recipes ?? []).filter((r) => r.bouquet_id === b.id);
             return (
-              <m.div key={b.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card card-hover p-5 flex flex-col border-t-4 border-t-accent">
-                <div className="flex justify-between items-start gap-2">
-                  <div><h3 className="text-lg">{b.name}</h3>{b.variety && <p className="text-xs text-muted">{b.variety}</p>}</div>
+              <m.div key={b.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.04 }}
+                className="card card-hover p-6 flex flex-col justify-between border-t-4 border-t-primary">
+                <div>
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <h3 className="text-xl font-bold text-foreground">{b.name}</h3>
+                    <span className={cn("stock-badge font-bold", can > 0 ? "bg-primary-soft text-primary border border-primary-border/60" : "bg-secondary-soft text-muted")}>
+                      {can > 0 ? `Can make ${can}` : "Shortage"}
+                    </span>
+                  </div>
+                  <p className="text-2xl font-display font-bold text-primary mb-3">{formatCurrency(b.selling_price)}</p>
+                  
+                  {bRecipes.length === 0 ? (
+                    <p className="text-xs text-muted italic bg-secondary-soft p-2.5 rounded-xl border border-border">No recipe configured yet.</p>
+                  ) : (
+                    <ul className="text-xs space-y-1 bg-secondary-soft/50 p-3 rounded-xl border border-border">
+                      {bRecipes.map((r) => {
+                        const comp = byId.get(r.component_id);
+                        return <li key={r.id} className="flex justify-between text-muted"><span className="font-medium text-foreground">{comp ? displayName(comp) : `#${r.component_id}`}</span><span>{r.quantity} {comp?.unit ?? "units"}</span></li>;
+                      })}
+                    </ul>
+                  )}
+                  {a && a.shortages.length > 0 && <p className="text-xs text-primary font-semibold mt-2">{shortageText(a.shortages)}</p>}
+                </div>
+
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
+                  <Button variant="outline" size="sm" onClick={() => setRecipeFor(b)}>Edit Recipe</Button>
                   <div className="flex gap-1">
                     <button onClick={() => openEdit(b)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Edit"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => remove(b)} className={cn(iconBtn, "hover:text-danger hover:bg-danger-soft")} aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => remove(b)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
-                <ul className="mt-3 text-sm text-muted space-y-0.5 flex-1">
-                  {rows.length === 0 && <li className="italic">No recipe yet</li>}
-                  {rows.map((r) => { const c = byId.get(r.component_id); return <li key={r.id}>{r.quantity} × {c ? displayName(c) : "?"}</li>; })}
-                </ul>
-                <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-sm">
-                  <span>Cost {formatCurrency(cost)} · <span className="font-semibold text-primary">{formatCurrency(b.selling_price)}</span></span>
-                  <span className={cn("stock-badge", (a?.can_make ?? 0) > 0 ? "bg-secondary-soft text-secondary" : "bg-danger-soft text-danger")}>Can make {a?.can_make ?? 0}</span>
-                </div>
-                {a && a.shortages.length > 0 && <p className="text-[11px] text-danger mt-1">{shortageText(a.shortages)}</p>}
-                <Button variant="outline" size="sm" className="mt-3" onClick={() => setRecipeFor(b)}>Edit recipe</Button>
               </m.div>
             );
           })}
-          {!isPending && bouquets.length === 0 && <p className="col-span-full text-center text-muted p-8">No bouquets yet. Add one, then define its recipe.</p>}
+          {!isPending && bouquets.length === 0 && <p className="col-span-full text-center text-muted p-12">No bouquets defined yet.</p>}
         </div>
       )}
 
@@ -143,21 +160,41 @@ export default function Inventory() {
         <div className="card overflow-hidden border-t-4 border-t-primary">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead><tr className="table-head border-b border-border"><th className="p-4">Product</th><th className="p-4">Cost / Sell</th><th className="p-4">Profit / unit</th><th className="p-4">Margin</th><th className="p-4">Sold</th><th className="p-4">Revenue</th><th className="p-4 text-right">Profit</th></tr></thead>
+              <thead>
+                <tr className="table-head border-b border-border">
+                  <th className="p-4">Product</th>
+                  <th className="p-4">Cost / Sell</th>
+                  <th className="p-4">Profit / unit</th>
+                  <th className="p-4">Margin %</th>
+                  <th className="p-4">Units Sold</th>
+                  <th className="p-4">Revenue</th>
+                  <th className="p-4 text-right">Net Profit</th>
+                </tr>
+              </thead>
               <tbody className="divide-y divide-border">
-                {marginsPending && !margins ? <tr><td colSpan={7}><TableSkeleton cols={7} /></td></tr> : (margins ?? []).filter((r) => !q || displayName(r).toLowerCase().includes(q)).map((r) => {
+                {marginsPending && !margins ? (
+                  <tr><td colSpan={7}><TableSkeleton cols={7} /></td></tr>
+                ) : (margins ?? []).filter((r) => !q || displayName(r).toLowerCase().includes(q)).map((r, idx) => {
                   const hi = r.profit_margin_percent >= 40, mid = r.profit_margin_percent >= 20 && !hi;
                   const Icon = hi ? TrendingUp : mid ? Minus : TrendingDown;
                   return (
-                    <tr key={r.id} className="hover:bg-background/60">
-                      <td className="p-4"><p className="font-semibold">{displayName(r)}</p><p className="text-xs text-muted capitalize">{r.category} · {r.unit}</p></td>
+                    <m.tr key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(idx, 15) * 0.02 }} className="hover:bg-primary-soft/30 hover:translate-x-1 transition-all duration-150">
+                      <td className="p-4">
+                        <p className="font-semibold text-foreground">{displayName(r)}</p>
+                        <p className="text-xs text-muted capitalize">{r.category} · {r.unit}</p>
+                      </td>
                       <td className="p-4 text-muted text-sm">{formatCurrency(r.purchase_price)} / {formatCurrency(r.selling_price)}</td>
-                      <td className="p-4 font-medium text-secondary">{formatCurrency(r.profit_per_unit)}</td>
-                      <td className="p-4"><span className={cn("inline-flex items-center gap-1 stock-badge", hi ? "bg-secondary-soft text-secondary" : mid ? "bg-accent-soft text-amber-800" : "bg-danger-soft text-danger")}><Icon className="w-3.5 h-3.5" />{r.profit_margin_percent.toFixed(1)}%</span></td>
-                      <td className="p-4 text-muted">{r.total_units_sold}</td>
+                      <td className="p-4 font-bold text-foreground">{formatCurrency(r.profit_per_unit)}</td>
+                      <td className="p-4">
+                        <span className={cn("inline-flex items-center gap-1 stock-badge font-bold", 
+                          hi ? "bg-primary-soft text-primary border border-primary-border/60" : "bg-secondary-soft text-foreground border border-border")}>
+                          <Icon className="w-3.5 h-3.5" />{r.profit_margin_percent.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="p-4 text-muted font-medium">{r.total_units_sold}</td>
                       <td className="p-4 text-muted">{formatCurrency(r.total_revenue)}</td>
-                      <td className="p-4 font-bold text-right">{formatCurrency(r.total_profit)}</td>
-                    </tr>
+                      <td className="p-4 font-bold text-right text-primary text-base">{formatCurrency(r.total_profit)}</td>
+                    </m.tr>
                   );
                 })}
               </tbody>

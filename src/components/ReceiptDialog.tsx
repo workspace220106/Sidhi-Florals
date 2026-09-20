@@ -96,7 +96,7 @@ export function ReceiptDialog({ sale, open, onOpenChange }: { sale: Sale | null;
       footer={<>
         <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
         <Button variant="outline" onClick={print} loading={busy === "print"}><Printer className="w-4 h-4" /> Print</Button>
-        <Button variant="secondary" onClick={share} loading={busy === "share"}><Send className="w-4 h-4" /> WhatsApp</Button>
+        <Button variant="primary" onClick={share} loading={busy === "share"}><Send className="w-4 h-4" /> WhatsApp</Button>
       </>}>
       <div id="receipt-content" className="font-mono text-sm">
         <div className="center text-center mb-4">

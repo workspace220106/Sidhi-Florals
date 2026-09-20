@@ -1,79 +1,201 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #fbf7f2;
-  --color-surface: #ffffff;
-  --color-primary: #d9456c;
-  --color-primary-soft: #fbe4ea;
-  --color-secondary: #5f8b6a;
-  --color-secondary-soft: #e6efe8;
-  --color-accent: #e2b04a;
-  --color-accent-soft: #fbf1d9;
-  --color-foreground: #2a1e2b;
-  --color-muted: #7a6b7c;
-  --color-border: #eadfd8;
-  --color-danger: #c62f2f;
-  --color-danger-soft: #fde8e8;
+  /* PRIME COLOR 1: Regal Rose Petal (Brand & Accent) */
+  --color-primary: #d93b68;
+  --color-primary-hover: #c42956;
+  --color-primary-soft: #fdf0f4;
+  --color-primary-border: #f8c8d7;
 
-  --font-sans: "Inter Variable", system-ui, sans-serif;
+  /* PRIME COLOR 2: Luxe Obsidian Slate (Structure, Contrast & Dark Accents) */
+  --color-foreground: #17151a;
+  --color-secondary: #28242e;
+  --color-secondary-soft: #f2eff4;
+  --color-muted: #6e6475;
+  --color-border: #eae4de;
+
+  /* PRIME COLOR 3: Alabaster Silk & Cream (Canvas & Surfaces) */
+  --color-background: #fbf9f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #fcfbfa;
+
+  /* Danger & Status mapped into prime tones */
+  --color-danger: #d93b68;
+  --color-danger-soft: #fdf0f4;
+
+  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
   --font-display: "Fraunces Variable", Georgia, serif;
 
-  --radius-card: 1rem;
-  --shadow-card: 0 1px 2px rgb(42 30 43 / 0.04), 0 8px 24px -12px rgb(42 30 43 / 0.12);
-  --shadow-rose: 0 10px 30px -12px rgb(217 69 108 / 0.45);
+  --radius-card: 1.25rem;
+  --shadow-card: 0 2px 8px -2px rgb(23 21 26 / 0.05), 0 12px 28px -10px rgb(23 21 26 / 0.08);
+  --shadow-rose: 0 12px 32px -10px rgb(217 59 104 / 0.4);
+  --shadow-rose-glow: 0 0 25px -3px rgb(217 59 104 / 0.35);
+  --shadow-slate: 0 12px 30px -10px rgb(23 21 26 / 0.25);
 }
 
 @layer base {
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
-  body { @apply bg-background text-foreground font-sans antialiased min-h-screen overflow-x-hidden; }
+  body { 
+    @apply bg-background text-foreground font-sans antialiased min-h-screen overflow-x-hidden selection:bg-primary-soft selection:text-primary;
+    background-image: radial-gradient(at 100% 0%, rgba(217, 59, 104, 0.04) 0px, transparent 50%),
+                      radial-gradient(at 0% 100%, rgba(40, 36, 46, 0.03) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
   h1, h2, h3, h4 { @apply font-display font-semibold tracking-tight; }
   input, select, textarea { @apply font-sans; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full hover:bg-muted/40 transition-colors; }
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold px-4 py-2.5 transition-[transform,background-color,box-shadow] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+  @apply relative overflow-hidden inline-flex items-center justify-center gap-2 rounded-xl font-semibold px-4 py-2.5 transition-all duration-200 active:scale-[0.96] disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none;
 }
 
 @layer components {
-  .card { @apply bg-surface border border-border rounded-card shadow-card; }
-  .card-hover { @apply transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-rose; }
-  .btn-primary { @apply btn bg-primary text-white shadow-rose hover:brightness-105; }
-  .btn-secondary { @apply btn bg-secondary text-white hover:brightness-105; }
-  .btn-ghost { @apply btn bg-transparent text-muted hover:bg-primary-soft hover:text-primary; }
-  .btn-outline { @apply btn border border-border bg-surface text-foreground hover:bg-background; }
-  .input { @apply w-full rounded-xl border border-border bg-surface px-3 py-2.5 outline-none transition-[box-shadow,border-color] duration-150 focus:border-primary focus:ring-4 focus:ring-primary/15; }
-  .label { @apply block text-sm font-semibold text-foreground mb-1; }
-  .chip { @apply px-3.5 py-1.5 rounded-full text-sm font-medium border border-border bg-surface text-muted transition-colors cursor-pointer hover:border-primary/40 hover:text-primary; }
-  .chip-active { @apply bg-primary text-white border-primary shadow-rose hover:text-white; }
-  .table-head { @apply bg-background/60 text-muted text-xs uppercase tracking-wider; }
-  .stock-badge { @apply px-2.5 py-1 rounded-full text-xs font-bold; }
+  .card { 
+    @apply bg-surface border border-border rounded-card shadow-card transition-all duration-300; 
+  }
+  .card-hover { 
+    @apply transition-all duration-300 hover:-translate-y-1.5 hover:shadow-rose hover:border-primary-border/70; 
+  }
+  .card-interactive {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40 cursor-pointer active:scale-[0.99];
+  }
+  
+  .btn-primary { 
+    @apply btn bg-primary text-white shadow-rose hover:bg-primary-hover hover:-translate-y-0.5 hover:shadow-rose-glow; 
+  }
+  .btn-secondary { 
+    @apply btn bg-secondary text-white shadow-slate hover:bg-foreground hover:-translate-y-0.5; 
+  }
+  .btn-ghost { 
+    @apply btn bg-transparent text-muted hover:bg-primary-soft hover:text-primary hover:scale-[1.02]; 
+  }
+  .btn-outline { 
+    @apply btn border border-border bg-surface text-foreground hover:bg-primary-soft/50 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5; 
+  }
+  
+  .input { 
+    @apply w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 outline-none transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/15 focus:bg-white; 
+  }
+  .label { 
+    @apply block text-sm font-semibold text-foreground mb-1.5; 
+  }
+  .chip { 
+    @apply px-4 py-2 rounded-full text-sm font-medium border border-border bg-surface text-muted transition-all duration-200 cursor-pointer hover:border-primary/50 hover:text-primary hover:scale-105 active:scale-95; 
+  }
+  .chip-active { 
+    @apply bg-primary text-white border-primary shadow-rose hover:text-white hover:bg-primary-hover scale-105; 
+  }
+  .table-head { 
+    @apply bg-secondary-soft/70 text-foreground text-xs font-semibold uppercase tracking-wider backdrop-blur-xs; 
+  }
+  .stock-badge { 
+    @apply px-3 py-1 rounded-full text-xs font-bold transition-transform duration-200 inline-flex items-center gap-1; 
+  }
 }
 
 @layer utilities {
-  .text-gradient { @apply bg-clip-text text-transparent bg-linear-to-r from-primary to-accent; }
+  .text-gradient { 
+    @apply bg-clip-text text-transparent bg-linear-to-r from-primary via-rose-500 to-primary-hover; 
+  }
+  .text-gradient-dark {
+    @apply bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted;
+  }
 }
 
+/* Keyframe Animations */
 @keyframes petal-fall {
-  0%   { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
-  10%  { opacity: var(--petal-opacity, 0.35); }
-  100% { transform: translate3d(var(--petal-drift, 40px), 110vh, 0) rotate(360deg); opacity: 0; }
+  0%   { transform: translate3d(0, -10vh, 0) rotate(0deg) scale(0.9); opacity: 0; }
+  15%  { opacity: var(--petal-opacity, 0.45); }
+  85%  { opacity: var(--petal-opacity, 0.45); }
+  100% { transform: translate3d(var(--petal-drift, 50px), 110vh, 0) rotate(360deg) scale(1.1); opacity: 0; }
 }
+
 @keyframes petal-burst {
-  0%   { transform: translate3d(0,0,0) scale(0.6) rotate(0deg); opacity: 1; }
-  100% { transform: translate3d(var(--bx, 30px), var(--by, -60px), 0) scale(1) rotate(180deg); opacity: 0; }
+  0%   { transform: translate3d(0,0,0) scale(0.5) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--bx, 30px), var(--by, -60px), 0) scale(1.2) rotate(220deg); opacity: 0; }
 }
+
 @keyframes pulse-once {
-  0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); }
+  0% { transform: scale(1); } 
+  45% { transform: scale(1.12); filter: drop-shadow(0 0 12px rgba(217, 59, 104, 0.5)); } 
+  100% { transform: scale(1); }
 }
-.petal { position: absolute; top: 0; will-change: transform, opacity; animation: petal-fall var(--petal-duration, 14s) linear infinite; animation-delay: var(--petal-delay, 0s); pointer-events: none; }
-.petal-burst { position: absolute; will-change: transform, opacity; animation: petal-burst 450ms ease-out forwards; pointer-events: none; }
-.pulse-once { animation: pulse-once 350ms ease-out; }
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
+}
+
+@keyframes shine-sweep {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(200%) rotate(25deg); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+.petal { 
+  position: absolute; 
+  top: 0; 
+  will-change: transform, opacity; 
+  animation: petal-fall var(--petal-duration, 14s) linear infinite; 
+  animation-delay: var(--petal-delay, 0s); 
+  pointer-events: none; 
+}
+
+.petal-burst { 
+  position: absolute; 
+  will-change: transform, opacity; 
+  animation: petal-burst 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+  pointer-events: none; 
+}
+
+.pulse-once { 
+  animation: pulse-once 400ms cubic-bezier(0.34, 1.56, 0.64, 1); 
+}
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s ease-in-out infinite;
+}
+
+/* Luxury Sheen Hover Overlay on Buttons & Cards */
+.hover-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.hover-sheen::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.hover-sheen:hover::after {
+  transform: translateX(100%);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .petal, .petal-burst { display: none !important; }
-  .pulse-once { animation: none !important; }
+  .pulse-once, .animate-float, .animate-pulse-subtle { animation: none !important; }
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }

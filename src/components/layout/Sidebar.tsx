@@ -21,14 +21,17 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="h-full flex flex-col pt-8 pb-6 px-4">
       <div className="px-3 mb-10"><Logo /></div>
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 space-y-1.5">
         {NAV.map((item) => {
           const active = location === item.href || (item.href !== "/" && location.startsWith(item.href));
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate} onMouseEnter={() => prefetchRoute(item.href)} onTouchStart={() => prefetchRoute(item.href)}
-              className={cn("relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors", active ? "text-primary" : "text-muted hover:text-foreground hover:bg-primary-soft/50")}>
-              {active && <m.span layoutId="nav-pill" className="absolute inset-0 bg-primary-soft rounded-xl" transition={{ type: "spring", stiffness: 350, damping: 30 }} />}
-              <item.icon className="relative w-5 h-5" />
+              className={cn("relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 group", 
+                active ? "text-primary font-semibold" : "text-muted hover:text-foreground hover:bg-secondary-soft hover:translate-x-1")}>
+              {active && (
+                <m.span layoutId="nav-pill" className="absolute inset-0 bg-primary-soft rounded-xl border border-primary-border/60 shadow-xs" transition={{ type: "spring", stiffness: 380, damping: 32 }} />
+              )}
+              <item.icon className={cn("relative w-5 h-5 transition-transform duration-200 group-hover:scale-110", active ? "text-primary" : "text-muted group-hover:text-primary")} />
               <span className="relative">{item.label}</span>
             </Link>
           );
@@ -36,8 +39,12 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="mt-auto px-1 space-y-3">
         <InstallButton />
-        <div className="p-3 rounded-xl bg-secondary-soft border border-secondary/20 flex items-center gap-2 text-sm text-secondary font-medium">
-          <span className="w-2 h-2 rounded-full bg-secondary" /> Fresh &amp; online
+        <div className="p-3.5 rounded-xl bg-secondary-soft border border-border flex items-center gap-2.5 text-xs text-foreground font-semibold">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+          </span>
+          <span>Sidhi Live Studio</span>
         </div>
       </div>
     </div>
@@ -46,8 +53,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-72 flex-col border-r border-border bg-surface/70 z-20">
+    <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-72 flex-col border-r border-border bg-surface/85 backdrop-blur-md z-20 shadow-xs">
       <SidebarContent />
     </aside>
   );
 }
+
