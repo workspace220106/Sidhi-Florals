@@ -33,10 +33,13 @@
   ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
 }
 
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold px-4 py-2.5 transition-[transform,background-color,box-shadow] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+}
+
 @layer components {
   .card { @apply bg-surface border border-border rounded-card shadow-card; }
   .card-hover { @apply transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-rose; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold px-4 py-2.5 transition-[transform,background-color,box-shadow] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer; }
   .btn-primary { @apply btn bg-primary text-white shadow-rose hover:brightness-105; }
   .btn-secondary { @apply btn bg-secondary text-white hover:brightness-105; }
   .btn-ghost { @apply btn bg-transparent text-muted hover:bg-primary-soft hover:text-primary; }

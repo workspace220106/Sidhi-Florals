@@ -13,7 +13,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ["react", "react-dom", "wouter", "@tanstack/react-query"],
-          supabase: ["@supabase/supabase-js"],
+          supabase: ["@supabase/postgrest-js"],
           motion: ["motion"],
           charts: ["recharts"],
         },

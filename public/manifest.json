@@ -1,0 +1,11 @@
+{
+  "short_name": "Sidhi Florals",
+  "name": "Sidhi Florals Billing",
+  "description": "Billing, inventory and bouquets for Sidhi Florals.",
+  "icons": [{ "src": "icon-192.png", "type": "image/png", "sizes": "192x192" }, { "src": "icon-512.png", "type": "image/png", "sizes": "512x512" }],
+  "start_url": "/",
+  "background_color": "#FBF7F2",
+  "theme_color": "#D9456C",
+  "display": "standalone",
+  "orientation": "portrait"
+}
