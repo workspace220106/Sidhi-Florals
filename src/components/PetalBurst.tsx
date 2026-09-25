@@ -1,7 +1,7 @@
-/** Spawns petals from the centre of `el`; each removes itself when its CSS animation ends. */
-export function burstPetals(el: HTMLElement, count = 5) {
+/** Spawns petals from the centre of `el` (or viewport); each removes itself when its CSS animation ends. */
+export function burstPetals(el?: HTMLElement | null, count = 5) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const r = el.getBoundingClientRect();
+  const r = el ? el.getBoundingClientRect() : { left: window.innerWidth / 2 - 10, top: window.innerHeight / 2 - 10, width: 20, height: 20 };
   for (let i = 0; i < count; i++) {
     const img = document.createElement("img");
     img.src = "/petal.svg"; img.alt = ""; img.className = "petal-burst"; img.width = 12; img.height = 12;
