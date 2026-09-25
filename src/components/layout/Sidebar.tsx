@@ -4,6 +4,7 @@ import { m } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { InstallButton } from "../InstallButton";
+import { ConnectionStatus } from "../ConnectionStatus";
 import { prefetchRoute } from "@/routes";
 
 export const NAV = [
@@ -39,13 +40,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="mt-auto px-1 space-y-3">
         <InstallButton />
-        <div className="p-3.5 rounded-xl bg-secondary-soft border border-border flex items-center gap-2.5 text-xs text-foreground font-semibold">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
-          </span>
-          <span>Sidhi Live Studio</span>
-        </div>
+        <ConnectionStatus />
       </div>
     </div>
   );

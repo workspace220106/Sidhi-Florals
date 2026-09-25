@@ -11,10 +11,24 @@ export const supabase = new PostgrestClient(`${url ?? "https://invalid.supabase.
   headers: { apikey: key ?? "", Authorization: `Bearer ${key ?? ""}` },
 });
 
-/** Turns a PostgREST error into a readable message. */
+/** Turns a PostgREST or network error into a message a shop owner can act on. */
 export function errorMessage(err: unknown): string {
-  if (!err) return "Unknown error";
-  const e = err as { message?: string; details?: string };
-  const msg = e.message || e.details || String(err);
-  return msg.replace(/^[A-Z0-9]{5}:\s*/, "");
+  if (!err) return "Something went wrong. Please try again.";
+  const e = err as { message?: string; details?: string; code?: string };
+  const raw = (e.message || e.details || String(err)).trim();
+
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    return "You're offline — this could not be saved. Reconnect and try again.";
+  }
+  if (/failed to fetch|networkerror|load failed|fetch failed/i.test(raw)) {
+    return "Could not reach the server. Check your internet and try again.";
+  }
+  if (e.code === "23505" || /duplicate key/i.test(raw)) {
+    return "That entry already exists.";
+  }
+  if (e.code === "23503" || /foreign key|violates foreign key/i.test(raw)) {
+    return "This item is used in a bouquet recipe. Remove it from those recipes first.";
+  }
+  // Postgres RAISE messages arrive prefixed with a SQLSTATE like "P0001: ".
+  return raw.replace(/^[A-Z0-9]{5}:\s*/, "");
 }

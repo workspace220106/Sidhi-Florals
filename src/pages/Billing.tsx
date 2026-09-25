@@ -226,7 +226,7 @@ export default function Billing() {
                     {l.kind === "custom_bouquet" && <p className="text-[10px] text-muted truncate mt-0.5">{componentsSummary(l.components)}</p>}
                     <div className="flex items-center gap-1 mt-1">
                       <span className="text-xs font-bold text-muted">₹</span>
-                      <input type="number" step="any" value={l.price || ""} onChange={(e) => setPrice(l.key, Number(e.target.value) || 0)}
+                      <input type="number" step="any" min={0} value={l.price || ""} onChange={(e) => setPrice(l.key, Math.max(0, Number(e.target.value) || 0))}
                         className="w-20 text-xs sm:text-sm font-bold text-primary bg-secondary-soft/70 border border-border rounded-lg px-1.5 py-0.5 outline-none focus:border-primary focus:bg-white" aria-label={`Price of ${l.name}`} />
                       {l.kind === "custom_bouquet" && (
                         <button onClick={() => { setEditingKey(l.key); setBuilderOpen(true); }} className="p-1 text-muted hover:text-primary cursor-pointer transition-colors" aria-label="Edit bouquet">

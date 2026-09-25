@@ -27,7 +27,7 @@ describe("BouquetBuilder", () => {
 
     const price = screen.getByLabelText(/^price/i) as HTMLInputElement;
     expect(price.value).toBe("100");
-    expect(screen.getByText("Cost").parentElement).toHaveTextContent("₹51");
+    expect(screen.getByText(/material cost/i).parentElement).toHaveTextContent("₹51");
 
     await user.clear(price);
     await user.type(price, "150");

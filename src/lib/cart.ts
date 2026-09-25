@@ -48,6 +48,10 @@ export function resolveTotals(lines: CartLine[], customTotalStr: string, amountP
 
 export function validateCheckout(lines: CartLine[], totals: CartTotals, customerId: string): string | null {
   if (lines.length === 0) return "Cart is empty.";
+  if (!Number.isFinite(totals.total) || totals.total < 0) return "Total is not a valid amount.";
+  if (totals.total === 0) return "Total is ₹0 — set a price before generating the bill.";
+  if (!Number.isFinite(totals.amountPaid) || totals.amountPaid < 0) return "Amount paid is not a valid amount.";
+  if (totals.amountPaid > totals.total) return "Amount paid is more than the total. Reduce it or raise the total.";
   if (totals.amountPaid < totals.total && !customerId) return "Select a registered customer to record a credit sale.";
   return null;
 }

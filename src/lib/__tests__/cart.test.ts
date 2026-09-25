@@ -30,6 +30,19 @@ describe("cart math", () => {
   it("rejects empty cart", () => {
     expect(validateCheckout([], resolveTotals([], "", ""), "")).toMatch(/empty/i);
   });
+
+  it("rejects a zero or negative total", () => {
+    expect(validateCheckout([line()], resolveTotals([line()], "0", ""), "")).toMatch(/₹0/);
+    expect(validateCheckout([line()], resolveTotals([line()], "-5", ""), "")).toMatch(/valid amount/i);
+  });
+
+  it("rejects paying more than the total", () => {
+    expect(validateCheckout([line()], resolveTotals([line()], "30", "50"), "")).toMatch(/more than the total/i);
+  });
+
+  it("accepts an exactly-paid bill with no customer", () => {
+    expect(validateCheckout([line()], resolveTotals([line()], "30", "30"), "")).toBeNull();
+  });
   it("summarises components", () => {
     expect(componentsSummary([
       { productId: 1, name: "Rose Red", quantity: 6, unitCost: 8, sellingPrice: 15 },

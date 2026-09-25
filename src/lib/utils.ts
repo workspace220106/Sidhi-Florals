@@ -5,8 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Money for display. Shows paise only when the amount actually has them,
+ * so ₹22 stays ₹22 but ₹22.50 is never rounded to ₹23.
+ */
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
+  const n = Number.isFinite(amount) ? amount : 0;
+  const hasPaise = Math.abs(n * 100 - Math.round(n * 100)) > 0.5 || Math.round(n * 100) % 100 !== 0;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: hasPaise ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(n);
 }
 
 export function formatNumber(n: number) {

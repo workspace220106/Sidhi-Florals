@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { loaders } from "@/routes";
 
 const Dashboard = lazy(loaders["/"]);
@@ -26,18 +27,20 @@ function PageFallback() {
 export default function App() {
   return (
     <AppLayout>
-      <Suspense fallback={<PageFallback />}>
-        <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/billing" component={Billing} />
-          <Route path="/inventory" component={Inventory} />
-          <Route path="/customers" component={Customers} />
-          <Route path="/sales" component={Sales} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/credits" component={Credits} />
-          <Route component={NotFound} />
-        </Switch>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<PageFallback />}>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/billing" component={Billing} />
+            <Route path="/inventory" component={Inventory} />
+            <Route path="/customers" component={Customers} />
+            <Route path="/sales" component={Sales} />
+            <Route path="/reports" component={Reports} />
+            <Route path="/credits" component={Credits} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </ErrorBoundary>
     </AppLayout>
   );
 }

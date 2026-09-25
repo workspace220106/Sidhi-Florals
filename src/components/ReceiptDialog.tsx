@@ -1,8 +1,8 @@
 import { Fragment, useState } from "react";
-import { Printer, Send } from "lucide-react";
+import { Printer, Send, Download, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Sale } from "@/api/types";
-import { SHOP } from "@/config/shop";
+import { SHOP, shopHeaderLines } from "@/config/shop";
 import { formatCurrency, padId } from "@/lib/utils";
 import { Dialog } from "./ui/Dialog";
 import { Button } from "./ui/Button";
@@ -12,123 +12,243 @@ async function buildPdf(sale: Sale) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   let y = 22;
   const line = () => { doc.line(20, y, 190, y); y += 6; };
-  doc.setFont("courier", "bold"); doc.setFontSize(18); doc.text(SHOP.name.toUpperCase(), 105, y, { align: "center" }); y += 7;
+
+  doc.setFont("courier", "bold"); doc.setFontSize(18);
+  doc.text(SHOP.name.toUpperCase(), 105, y, { align: "center" }); y += 7;
   doc.setFont("courier", "normal"); doc.setFontSize(9);
-  doc.text(SHOP.tagline, 105, y, { align: "center" }); y += 5;
-  doc.text(`${SHOP.address} | ${SHOP.phone}`, 105, y, { align: "center" }); y += 5;
-  doc.text(SHOP.gstin, 105, y, { align: "center" }); y += 6; line();
+  for (const l of shopHeaderLines()) { doc.text(l, 105, y, { align: "center" }); y += 5; }
+  y += 1; line();
+
   doc.setFont("courier", "bold"); doc.text(`RECEIPT #${padId(sale.id)}`, 20, y);
   doc.setFont("courier", "normal"); doc.text(new Date(sale.date).toLocaleString("en-IN"), 190, y, { align: "right" }); y += 6;
-  doc.text(`Customer: ${sale.customers?.name ?? "Walk-in Customer"}`, 20, y); y += 6; line();
-  doc.setFont("courier", "bold"); doc.text("Item", 20, y); doc.text("Qty", 125, y, { align: "center" }); doc.text("Price", 158, y, { align: "right" }); doc.text("Total", 190, y, { align: "right" }); y += 3; line();
+  doc.text(`Customer: ${sale.customers?.name ?? "Walk-in Customer"}`, 20, y); y += 6;
+  if (sale.customers?.phone) { doc.text(`Phone: ${sale.customers.phone}`, 20, y); y += 6; }
+  line();
+
+  doc.setFont("courier", "bold");
+  doc.text("Item", 20, y); doc.text("Qty", 125, y, { align: "center" });
+  doc.text("Price", 158, y, { align: "right" }); doc.text("Total", 190, y, { align: "right" });
+  y += 3; line();
   doc.setFont("courier", "normal");
+
   const row = (name: string, qty: string, price: string, total: string, small = false) => {
-    if (y > 270) { doc.addPage(); y = 22; }
+    if (y > 265) { doc.addPage(); y = 22; }
     doc.setFontSize(small ? 8 : 9);
     doc.text(name.length > 34 ? name.slice(0, 31) + "..." : name, small ? 26 : 20, y);
-    doc.text(qty, 125, y, { align: "center" }); doc.text(price, 158, y, { align: "right" }); doc.text(total, 190, y, { align: "right" }); y += small ? 4.5 : 6;
+    doc.text(qty, 125, y, { align: "center" });
+    doc.text(price, 158, y, { align: "right" });
+    doc.text(total, 190, y, { align: "right" });
+    y += small ? 4.5 : 6;
   };
+
   for (const it of sale.sale_items) {
     row(it.name, String(it.quantity), it.price.toFixed(2), it.total.toFixed(2));
     for (const c of it.sale_item_components) row(`- ${c.name}`, String(c.quantity), "", "", true);
   }
   line();
+
   const subtotal = sale.sale_items.reduce((s, i) => s + i.total, 0);
+  const discount = subtotal - sale.total;
   doc.setFontSize(9);
-  if (subtotal - sale.total > 0.01) {
+  if (discount > 0.01) {
     doc.text("Subtotal:", 130, y); doc.text(subtotal.toFixed(2), 190, y, { align: "right" }); y += 6;
-    doc.text(`Discount (${(((subtotal - sale.total) / subtotal) * 100).toFixed(2)}%):`, 130, y); doc.text(`-${(subtotal - sale.total).toFixed(2)}`, 190, y, { align: "right" }); y += 6;
+    doc.text(`Discount (${((discount / subtotal) * 100).toFixed(2)}%):`, 130, y);
+    doc.text(`-${discount.toFixed(2)}`, 190, y, { align: "right" }); y += 6;
   }
-  doc.setFont("courier", "bold"); doc.text("GRAND TOTAL:", 130, y); doc.text(`INR ${sale.total.toFixed(2)}`, 190, y, { align: "right" }); y += 6;
-  doc.setFont("courier", "normal"); doc.text("Paid:", 130, y); doc.text(sale.amount_paid.toFixed(2), 190, y, { align: "right" }); y += 6;
-  if (sale.total - sale.amount_paid > 0.01) { doc.text("Balance due:", 130, y); doc.text((sale.total - sale.amount_paid).toFixed(2), 190, y, { align: "right" }); y += 6; }
-  y += 8; doc.setFont("courier", "italic"); doc.text(SHOP.receiptFooter, 105, y, { align: "center" });
+  doc.setFont("courier", "bold");
+  doc.text("GRAND TOTAL:", 130, y); doc.text(`INR ${sale.total.toFixed(2)}`, 190, y, { align: "right" }); y += 6;
+  doc.setFont("courier", "normal");
+  doc.text("Paid:", 130, y); doc.text(sale.amount_paid.toFixed(2), 190, y, { align: "right" }); y += 6;
+  if (sale.total - sale.amount_paid > 0.01) {
+    doc.setFont("courier", "bold");
+    doc.text("Balance due:", 130, y);
+    doc.text((sale.total - sale.amount_paid).toFixed(2), 190, y, { align: "right" }); y += 6;
+    doc.setFont("courier", "normal");
+  }
+
+  y += 8; doc.setFont("courier", "italic");
+  doc.text(SHOP.receiptFooter, 105, y, { align: "center" });
   return doc;
 }
 
+const fileNameFor = (sale: Sale) => `${SHOP.name.replace(/\s+/g, "-")}-Receipt-${padId(sale.id)}.pdf`;
+
 export function ReceiptDialog({ sale, open, onOpenChange }: { sale: Sale | null; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [busy, setBusy] = useState<"print" | "share" | null>(null);
+  const [busy, setBusy] = useState<"print" | "pdf" | "share" | null>(null);
   if (!sale) return null;
+
   const subtotal = sale.sale_items.reduce((s, i) => s + i.total, 0);
   const discount = subtotal - sale.total;
   const due = sale.total - sale.amount_paid;
 
   const print = () => {
     const html = document.getElementById("receipt-content")?.innerHTML;
-    if (!html) return;
+    if (!html) { toast.error("Receipt is not ready yet."); return; }
     setBusy("print");
     const iframe = document.createElement("iframe");
+    iframe.setAttribute("aria-hidden", "true");
     iframe.style.cssText = "position:fixed;width:0;height:0;border:0;opacity:0";
     document.body.appendChild(iframe);
     const d = iframe.contentDocument;
-    if (!d) { iframe.remove(); setBusy(null); return; }
+    if (!d) { iframe.remove(); setBusy(null); toast.error("Could not open the print view."); return; }
     d.open();
-    d.write(`<html><head><title>Receipt</title><style>
+    d.write(`<html><head><title>Receipt ${padId(sale.id)}</title><style>
       body{font-family:Courier,monospace;font-size:12px;color:#000;margin:0;padding:8mm 6mm}
-      table{width:100%;border-collapse:collapse} th,td{padding:3px 2px;text-align:left} .r{text-align:right} .c{text-align:center}
-      .dash{border-top:1px dashed #000} .comp{font-size:10px;color:#444} .center{text-align:center} .b{font-weight:bold} .muted{color:#555;font-size:10px}
-      @page{margin:0}</style></head><body>${html}</body></html>`);
+      table{width:100%;border-collapse:collapse} th,td{padding:3px 2px;text-align:left}
+      .r{text-align:right} .c{text-align:center} .dash{border-top:1px dashed #000}
+      .comp{font-size:10px;color:#444} .center{text-align:center} .b{font-weight:bold}
+      .muted{color:#555;font-size:10px} @page{margin:0}</style></head><body>${html}</body></html>`);
     d.close();
-    setTimeout(() => { iframe.contentWindow?.focus(); iframe.contentWindow?.print(); setTimeout(() => { iframe.remove(); setBusy(null); }, 800); }, 250);
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => { iframe.remove(); setBusy(null); }, 1000);
+    }, 250);
+  };
+
+  const downloadPdf = async () => {
+    setBusy("pdf");
+    try {
+      const doc = await buildPdf(sale);
+      doc.save(fileNameFor(sale));
+      toast.success("PDF downloaded");
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not create the PDF.");
+    } finally { setBusy(null); }
   };
 
   const share = async () => {
     setBusy("share");
     try {
       const doc = await buildPdf(sale);
-      const blob = doc.output("blob");
-      const file = new File([blob], `Receipt_${padId(sale.id)}.pdf`, { type: "application/pdf" });
-      const text = `*${SHOP.name}*\nReceipt #${padId(sale.id)} — ${formatCurrency(sale.total)}${due > 0 ? ` (balance due ${formatCurrency(due)})` : ""}\n${SHOP.receiptFooter}`;
+      const file = new File([doc.output("blob")], fileNameFor(sale), { type: "application/pdf" });
+      const text = `*${SHOP.name}*\nReceipt #${padId(sale.id)} — ${formatCurrency(sale.total)}`
+        + (due > 0.01 ? `\nBalance due: ${formatCurrency(due)}` : "")
+        + `\n${SHOP.receiptFooter}`;
+
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: `Receipt #${padId(sale.id)}`, text });
       } else {
+        // Desktop: WhatsApp Web can't take a file from a link, so save the PDF
+        // and open the chat with the summary ready to send.
         doc.save(file.name);
         const phone = (sale.customers?.phone ?? "").replace(/\D/g, "");
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text + "\n(PDF downloaded — attach it to this chat)")}`, "_blank");
+        const wa = phone
+          ? `https://wa.me/${phone.length === 10 ? "91" + phone : phone}?text=${encodeURIComponent(text)}`
+          : `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(wa, "_blank", "noopener,noreferrer");
+        toast.success("PDF saved — attach it in the WhatsApp tab that just opened.");
       }
     } catch (e) {
-      if (!(e instanceof Error && e.name === "AbortError")) toast.error("Could not share the receipt.");
+      if (!(e instanceof Error && e.name === "AbortError")) {
+        console.error(e);
+        toast.error("Could not share the receipt.");
+      }
     } finally { setBusy(null); }
   };
 
+  const anyBusy = busy !== null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title={`Receipt #${padId(sale.id)}`} size="sm"
-      footer={<>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-        <Button variant="outline" onClick={print} loading={busy === "print"}><Printer className="w-4 h-4" /> Print</Button>
-        <Button variant="primary" onClick={share} loading={busy === "share"}><Send className="w-4 h-4" /> WhatsApp</Button>
-      </>}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`Receipt #${padId(sale.id)}`}
+      size="sm"
+      footer={
+        <div className="w-full space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={print} loading={busy === "print"} disabled={anyBusy && busy !== "print"}>
+              <Printer className="w-4 h-4" /> Print
+            </Button>
+            <Button variant="outline" onClick={downloadPdf} loading={busy === "pdf"} disabled={anyBusy && busy !== "pdf"}>
+              <Download className="w-4 h-4" /> PDF
+            </Button>
+          </div>
+          <Button variant="primary" className="w-full" onClick={share} loading={busy === "share"} disabled={anyBusy && busy !== "share"}>
+            <Send className="w-4 h-4" /> Send on WhatsApp
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)} disabled={anyBusy}>
+            <X className="w-4 h-4" /> Close
+          </Button>
+        </div>
+      }
+    >
       <div id="receipt-content" className="font-mono text-sm">
         <div className="center text-center mb-4">
           <p className="b font-bold text-base uppercase tracking-widest">{SHOP.name}</p>
-          <p className="muted text-xs text-muted">{SHOP.tagline}</p>
-          <p className="muted text-xs text-muted">{SHOP.address} · {SHOP.phone}</p>
-          <p className="muted text-xs text-muted">{SHOP.gstin}</p>
+          {shopHeaderLines().map((l) => (
+            <p key={l} className="muted text-xs text-muted">{l}</p>
+          ))}
           <div className="dash border-t border-dashed border-border mt-2 pt-2 text-xs">
-            <p>RECEIPT #{padId(sale.id)}</p><p>{new Date(sale.date).toLocaleString("en-IN")}</p>
+            <p>RECEIPT #{padId(sale.id)}</p>
+            <p>{new Date(sale.date).toLocaleString("en-IN")}</p>
           </div>
         </div>
-        <p className="mb-3"><span className="muted text-xs text-muted uppercase">Customer: </span><span className="b font-bold">{sale.customers?.name ?? "Walk-in Customer"}</span></p>
+
+        <div className="mb-3">
+          <span className="muted text-xs text-muted uppercase">Customer: </span>
+          <span className="b font-bold">{sale.customers?.name ?? "Walk-in Customer"}</span>
+          {sale.customers?.phone && <p className="muted text-xs text-muted">{sale.customers.phone}</p>}
+        </div>
+
         <table className="w-full">
-          <thead><tr className="muted text-xs text-muted"><th className="text-left">Item</th><th className="c text-center">Qty</th><th className="r text-right">Price</th><th className="r text-right">Total</th></tr></thead>
+          <thead>
+            <tr className="muted text-xs text-muted">
+              <th className="text-left">Item</th>
+              <th className="c text-center">Qty</th>
+              <th className="r text-right">Price</th>
+              <th className="r text-right">Total</th>
+            </tr>
+          </thead>
           <tbody>
             {sale.sale_items.map((it) => (
               <Fragment key={it.id}>
-                <tr><td>{it.name}</td><td className="c text-center">{it.quantity}</td><td className="r text-right">{formatCurrency(it.price)}</td><td className="r text-right b font-bold">{formatCurrency(it.total)}</td></tr>
-                {it.sale_item_components.map((c) => <tr key={`c${c.id}`} className="comp text-xs text-muted"><td className="pl-3">– {c.quantity} {c.name}</td><td /><td /><td /></tr>)}
+                <tr>
+                  <td>{it.name}</td>
+                  <td className="c text-center">{it.quantity}</td>
+                  <td className="r text-right">{formatCurrency(it.price)}</td>
+                  <td className="r text-right b font-bold">{formatCurrency(it.total)}</td>
+                </tr>
+                {it.sale_item_components.map((c) => (
+                  <tr key={`c${c.id}`} className="comp text-xs text-muted">
+                    <td className="pl-3">– {c.quantity} {c.name}</td><td /><td /><td />
+                  </tr>
+                ))}
               </Fragment>
             ))}
           </tbody>
           <tfoot>
-            {discount > 0.01 && <>
-              <tr className="dash border-t border-dashed"><td colSpan={3} className="muted text-xs text-muted pt-2">Subtotal</td><td className="r text-right pt-2 text-xs">{formatCurrency(subtotal)}</td></tr>
-              <tr><td colSpan={3} className="muted text-xs text-muted">Discount ({((discount / subtotal) * 100).toFixed(2)}%)</td><td className="r text-right text-xs">-{formatCurrency(discount)}</td></tr>
-            </>}
-            <tr className="dash border-t border-dashed"><td colSpan={3} className="b font-bold pt-2 uppercase">Grand Total</td><td className="r text-right b font-bold pt-2">{formatCurrency(sale.total)}</td></tr>
-            <tr><td colSpan={3} className="muted text-xs text-muted">Paid</td><td className="r text-right text-xs">{formatCurrency(sale.amount_paid)}</td></tr>
-            {due > 0.01 && <tr><td colSpan={3} className="b font-bold text-danger">Balance due</td><td className="r text-right b font-bold text-danger">{formatCurrency(due)}</td></tr>}
+            {discount > 0.01 && (
+              <>
+                <tr className="dash border-t border-dashed">
+                  <td colSpan={3} className="muted text-xs text-muted pt-2">Subtotal</td>
+                  <td className="r text-right pt-2 text-xs">{formatCurrency(subtotal)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={3} className="muted text-xs text-muted">Discount ({((discount / subtotal) * 100).toFixed(2)}%)</td>
+                  <td className="r text-right text-xs">-{formatCurrency(discount)}</td>
+                </tr>
+              </>
+            )}
+            <tr className="dash border-t border-dashed">
+              <td colSpan={3} className="b font-bold pt-2 uppercase">Grand Total</td>
+              <td className="r text-right b font-bold pt-2">{formatCurrency(sale.total)}</td>
+            </tr>
+            <tr>
+              <td colSpan={3} className="muted text-xs text-muted">Paid</td>
+              <td className="r text-right text-xs">{formatCurrency(sale.amount_paid)}</td>
+            </tr>
+            {due > 0.01 && (
+              <tr>
+                <td colSpan={3} className="b font-bold text-primary">Balance due</td>
+                <td className="r text-right b font-bold text-primary">{formatCurrency(due)}</td>
+              </tr>
+            )}
           </tfoot>
         </table>
+
         {sale.notes && <p className="muted text-xs text-muted mt-3 italic">{sale.notes}</p>}
         <p className="center text-center mt-5 pt-3 dash border-t border-dashed border-border italic">{SHOP.receiptFooter}</p>
       </div>
