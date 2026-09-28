@@ -9,7 +9,7 @@ import type { ReactElement } from "react";
 const render = (ui: ReactElement) => rtlRender(<LazyMotion features={domAnimation}>{ui}</LazyMotion>);
 
 const p = (o: Partial<Product>): Product => ({
-  id: 1, name: "Rose", variety: "Red", unit: "stem", category: "flower", purchase_price: 8, selling_price: 15, stock: 20, supplier: "", created_at: "", ...o,
+  id: 1, name: "Rose", variety: "Red", unit: "stem", category: "flower", purchase_price: 8, selling_price: 15, stock: 20, supplier: "", created_at: "", archived_at: null, ...o,
 });
 const products = [p({}), p({ id: 2, name: "Lily", variety: "White", purchase_price: 35, selling_price: 70, stock: 2 }), p({ id: 3, name: "Red Rose Bouquet", variety: "", category: "bouquet" })];
 

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { InstallButton } from "../InstallButton";
 import { ConnectionStatus } from "../ConnectionStatus";
+import { BackupButton } from "../BackupButton";
 import { prefetchRoute } from "@/routes";
 
 export const NAV = [
@@ -40,6 +41,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="mt-auto px-1 space-y-3">
         <InstallButton />
+        <BackupButton />
         <ConnectionStatus />
       </div>
     </div>

@@ -1,0 +1,2 @@
+-- Voided bills excluded from revenue, profit and best-sellers; archived products hidden.
+-- (applied via Supabase; see v_sale_metrics, v_top_products, v_profit_margins, get_dashboard)

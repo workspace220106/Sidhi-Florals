@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { AnimatePresence, m } from "motion/react";
-import { Calendar, FileText, Trash2, ChevronDown } from "lucide-react";
+import { Calendar, FileText, Ban, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
-import { useSales, useDeleteSale } from "@/api/sales";
+import { useSales, useVoidSale } from "@/api/sales";
 import type { Sale } from "@/api/types";
 import { PageHeader } from "@/components/layout/AppLayout";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -12,7 +12,7 @@ import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 export default function Sales() {
   const { data: sales, isPending } = useSales();
-  const del = useDeleteSale();
+  const voidSale = useVoidSale();
   const [open, setOpen] = useState<number | null>(null);
   const [receipt, setReceipt] = useState<Sale | null>(null);
 
@@ -45,7 +45,10 @@ export default function Sales() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: Math.min(idx, 15) * 0.02 }}
-                    className="hover:bg-primary-soft/30 hover:translate-x-1 cursor-pointer align-top transition-all duration-150" 
+                    className={cn(
+                      "hover:bg-primary-soft/30 hover:translate-x-1 cursor-pointer align-top transition-all duration-150",
+                      s.voided_at && "opacity-55",
+                    )}
                     onClick={() => setOpen(expanded ? null : s.id)}>
                     
                     <td className="p-4 whitespace-nowrap">
@@ -83,10 +86,14 @@ export default function Sales() {
                       </AnimatePresence>
                     </td>
 
-                    <td className="p-4 font-display font-bold text-lg text-foreground">{formatCurrency(s.total)}</td>
+                    <td className={cn("p-4 font-display font-bold text-lg text-foreground", s.voided_at && "line-through")}>{formatCurrency(s.total)}</td>
 
                     <td className="p-4">
-                      {due > 0.01 ? (
+                      {s.voided_at ? (
+                        <span className="stock-badge bg-secondary-soft text-muted border border-border whitespace-nowrap" title={s.void_reason ?? undefined}>
+                          Voided
+                        </span>
+                      ) : due > 0.01 ? (
                         <span className="stock-badge bg-primary-soft text-primary border border-primary-border/60 whitespace-nowrap">
                           Due {formatCurrency(due)}
                         </span>
@@ -102,9 +109,23 @@ export default function Sales() {
                         <button onClick={() => setReceipt(s)} className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors" aria-label="Receipt">
                           <FileText className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { if (confirm("Delete this bill? Stock will not be restored.")) del.mutate(s.id, { onError: (e) => toast.error(errorMessage(e)), onSuccess: () => toast.success("Bill deleted") }); }} className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors" aria-label="Delete">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {!s.voided_at && (
+                          <button
+                            onClick={() => {
+                              const reason = prompt(`Void bill #${s.id}?\n\nThe stock it used goes back to inventory and it stops counting toward revenue. The bill itself is kept for your records.\n\nReason (optional):`);
+                              if (reason === null) return;
+                              voidSale.mutate({ saleId: s.id, reason }, {
+                                onError: (e) => toast.error(errorMessage(e)),
+                                onSuccess: () => toast.success(`Bill #${s.id} voided — stock returned`),
+                              });
+                            }}
+                            className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors"
+                            aria-label="Void bill"
+                            title="Void this bill and return its stock"
+                          >
+                            <Ban className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </m.tr>

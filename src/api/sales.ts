@@ -54,6 +54,7 @@ export function useOutstandingSales() {
         .from("sales")
         .select(SALE_SELECT)
         .gt("balance_due", 0.005)
+        .is("voided_at", null)
         .order("date", { ascending: false });
       if (error) throw error;
       return (data ?? []).map(mapSale);
@@ -87,12 +88,18 @@ export function useRecordPayment() {
   });
 }
 
-export function useDeleteSale() {
+/**
+ * Voids a bill instead of deleting it: the stock it consumed goes back, the
+ * record stays for the books, and it stops counting toward revenue. Sales
+ * history is a business record, so nothing here destroys one.
+ */
+export function useVoidSale() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (saleId: number) => {
-      const { error } = await supabase.rpc("delete_sale", { p_sale_id: saleId });
+    mutationFn: async ({ saleId, reason }: { saleId: number; reason?: string }): Promise<Sale> => {
+      const { data, error } = await supabase.rpc("void_sale", { p_sale_id: saleId, p_reason: reason ?? null });
       if (error) throw error;
+      return mapSale(data as Record<string, unknown>);
     },
     onSuccess: () => invalidateSalesData(qc),
   });

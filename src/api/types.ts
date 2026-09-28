@@ -4,8 +4,9 @@ export type ItemKind = "product" | "custom_bouquet";
 export interface Product {
   id: number; name: string; variety: string; unit: string; category: Category;
   purchase_price: number; selling_price: number; stock: number; supplier: string; created_at: string;
+  archived_at: string | null;
 }
-export type ProductInput = Omit<Product, "id" | "created_at">;
+export type ProductInput = Omit<Product, "id" | "created_at" | "archived_at">;
 
 export interface RecipeRow { id: number; bouquet_id: number; component_id: number; quantity: number }
 export interface RecipeInput { component_id: number; quantity: number }
@@ -25,6 +26,7 @@ export interface SaleItem {
 }
 export interface Sale {
   id: number; customer_id: number | null; total: number; amount_paid: number; notes: string | null; date: string;
+  voided_at: string | null; void_reason: string | null;
   customers: { name: string; phone: string } | null;
   sale_items: SaleItem[];
 }
