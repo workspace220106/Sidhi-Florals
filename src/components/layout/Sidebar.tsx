@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, ShoppingBag, Flower2, Users, History, BarChart3, Coins } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Flower2, Users, History, BarChart3, Coins, LogOut } from "lucide-react";
 import { m } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
@@ -7,6 +7,8 @@ import { InstallButton } from "../InstallButton";
 import { ConnectionStatus } from "../ConnectionStatus";
 import { BackupButton } from "../BackupButton";
 import { prefetchRoute } from "@/routes";
+import { signOut } from "@/lib/auth";
+import { queryClient } from "@/lib/queryClient";
 
 export const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -43,6 +45,16 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <InstallButton />
         <BackupButton />
         <ConnectionStatus />
+        <button
+          onClick={async () => {
+            // Clear cached shop data so the next person to sign in starts clean.
+            await signOut();
+            queryClient.clear();
+          }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-muted hover:text-primary hover:bg-primary-soft transition-colors cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" /> Sign out
+        </button>
       </div>
     </div>
   );
