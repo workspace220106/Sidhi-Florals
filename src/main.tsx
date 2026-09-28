@@ -10,7 +10,6 @@ import App from "./App";
 import { queryClient, persister } from "./lib/queryClient";
 import { supabaseConfigError } from "./lib/supabase";
 import { SetupScreen } from "./components/SetupScreen";
-import { AuthGate } from "./components/AuthGate";
 
 const root = createRoot(document.getElementById("root")!);
 
@@ -21,9 +20,7 @@ if (supabaseConfigError) {
     <StrictMode>
       <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: "v1" }}>
         <LazyMotion features={domAnimation} strict>
-          <AuthGate>
-            <App />
-          </AuthGate>
+          <App />
           <Toaster position="top-center" richColors closeButton />
         </LazyMotion>
       </PersistQueryClientProvider>
