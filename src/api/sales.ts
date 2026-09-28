@@ -24,7 +24,7 @@ export function mapSale(r: Record<string, unknown>): Sale {
 }
 
 export function invalidateSalesData(qc: QueryClient) {
-  for (const key of ["sales", "products", "bouquet-availability", "dashboard", "daily-sales", "monthly-sales", "top-products", "profit-margins", "customer-sales"]) {
+  for (const key of ["sales", "outstanding-sales", "products", "bouquet-availability", "dashboard", "daily-sales", "monthly-sales", "top-products", "profit-margins", "customer-sales"]) {
     qc.invalidateQueries({ queryKey: [key] });
   }
 }
@@ -34,6 +34,27 @@ export function useSales() {
     queryKey: saleKeys.all,
     queryFn: async (): Promise<Sale[]> => {
       const { data, error } = await supabase.from("sales").select(SALE_SELECT).order("date", { ascending: false }).limit(500);
+      if (error) throw error;
+      return (data ?? []).map(mapSale);
+    },
+  });
+}
+
+/**
+ * Every bill that still has money owing, regardless of age.
+ * Filtered in the database on the stored `balance_due` column: filtering a
+ * recent-sales window client-side silently drops old debts once the shop
+ * passes that many bills.
+ */
+export function useOutstandingSales() {
+  return useQuery({
+    queryKey: ["outstanding-sales"],
+    queryFn: async (): Promise<Sale[]> => {
+      const { data, error } = await supabase
+        .from("sales")
+        .select(SALE_SELECT)
+        .gt("balance_due", 0.005)
+        .order("date", { ascending: false });
       if (error) throw error;
       return (data ?? []).map(mapSale);
     },

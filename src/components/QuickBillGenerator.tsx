@@ -8,6 +8,8 @@ import type { Sale, CreateSaleItem } from "@/api/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Input";
 import { formatCurrency, displayName } from "@/lib/utils";
+import { validateCheckout, type CartLine } from "@/lib/cart";
+import { errorMessage } from "@/lib/supabase";
 import { burstPetals } from "@/components/PetalBurst";
 
 interface CustomBillRow {
@@ -106,21 +108,25 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
   const handleGenerateBill = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate valid items
-    const validItems = items.filter((it) => it.name.trim() !== "" && (Number(it.quantity) || 0) > 0);
+    const validItems = items.filter((it) => it.productId != null && (Number(it.quantity) || 0) > 0);
     if (validItems.length === 0) {
-      toast.error("Please add at least one item with a name and quantity.");
+      toast.error("Add at least one item from your inventory.");
       return;
     }
 
+    const totals = { subtotal: calculatedSubtotal, total: finalTotal, amountPaid: finalAmountPaid, due: balanceDue };
+    const lines: CartLine[] = validItems.map((it) => ({
+      key: it.id, kind: "product", productId: it.productId, name: it.name,
+      price: it.price, quantity: it.quantity, maxQuantity: null, components: [],
+    }));
+
     let customerIdToUse: number | null = null;
 
-    // Handle customer assignment
     if (customerMode === "existing" && selectedCustomerId) {
       customerIdToUse = Number(selectedCustomerId);
     } else if (customerMode === "new") {
       if (!newCustomerName.trim()) {
-        toast.error("Please enter the customer name.");
+        toast.error("Enter the customer's name.");
         return;
       }
       try {
@@ -129,38 +135,31 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
           phone: newCustomerPhone.trim(),
           business: "",
           address: "",
-          notes: "Created during Quick Bill Generation",
+          notes: "",
         });
         customerIdToUse = createdCust.id;
       } catch (err) {
-        console.error("Failed to create customer:", err);
-        toast.error("Failed to save customer. Proceeding with walk-in.");
+        // Falling through to a walk-in bill would silently drop the customer
+        // the user just typed in, so stop and let them retry instead.
+        toast.error(`Could not save the customer: ${errorMessage(err)}`);
+        return;
       }
     }
 
-    // Validation: credit sales require a customer
-    if (balanceDue > 0.01 && !customerIdToUse) {
-      toast.warning("Please select or create a customer to record a credit/due transaction.");
-      return;
-    }
+    // Same rules the POS screen uses: no zero, negative or overpaid bills, and
+    // a credit sale must be attached to a customer who can be chased for it.
+    const err = validateCheckout(lines, totals, customerIdToUse ? String(customerIdToUse) : "");
+    if (err) { toast.error(err); return; }
 
-    const saleItems: CreateSaleItem[] = validItems.map((it) => {
-      if (it.productId) {
-        return {
-          kind: "product",
-          product_id: it.productId,
-          quantity: it.quantity,
-          price: it.price,
-        };
-      }
-      return {
-        kind: "custom_bouquet",
-        name: it.name.trim(),
-        quantity: it.quantity,
-        price: it.price,
-        components: [],
-      };
-    });
+    // Every line is bound to a real product, so the server always resolves a
+    // true purchase price. Free-text lines used to be recorded with no
+    // components, which left unit_cost at 0 and reported the whole sale as profit.
+    const saleItems: CreateSaleItem[] = validItems.map((it) => ({
+      kind: "product",
+      product_id: it.productId as number,
+      quantity: it.quantity,
+      price: it.price,
+    }));
 
     try {
       const sale = await createSale.mutateAsync({
@@ -187,8 +186,8 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
       burstPetals(undefined, 18);
       onBillGenerated(sale);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to generate bill.");
+      // Surfaces the database's own message, e.g. "Not enough Rose Red: need 12, have 5".
+      toast.error(errorMessage(err));
     }
   };
 
@@ -325,12 +324,23 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
                   <tr key={row.id} className="hover:bg-secondary-soft/30 transition-colors">
                     <td className="p-3 text-center text-xs font-mono text-muted">{idx + 1}</td>
                     <td className="p-3">
-                      <Input
-                        placeholder="e.g. Red Rose Garland, Orchid Bunch, Stage Decoration"
-                        value={row.name}
-                        onChange={(e) => updateRow(row.id, { name: e.target.value })}
+                      <Select
+                        value={row.productId ?? ""}
+                        onChange={(e) => {
+                          const p = products?.find((prod) => String(prod.id) === e.target.value);
+                          if (!p) { updateRow(row.id, { productId: null, name: "", price: 0 }); return; }
+                          updateRow(row.id, { productId: p.id, name: displayName(p), price: p.selling_price });
+                        }}
                         className="h-9 text-xs sm:text-sm bg-surface font-medium"
-                      />
+                      >
+                        <option value="">Select an item…</option>
+                        {products?.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {displayName(p)} · {formatCurrency(p.selling_price)}
+                            {p.category === "bouquet" ? "" : ` · ${p.stock} ${p.unit} left`}
+                          </option>
+                        ))}
+                      </Select>
                     </td>
                     <td className="p-3 text-center">
                       <Input

@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { m } from "motion/react";
 import { Coins, Users, FileText, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useSales, useRecordPayment } from "@/api/sales";
+import { useOutstandingSales, useRecordPayment } from "@/api/sales";
 import type { Sale } from "@/api/types";
 import { PageHeader } from "@/components/layout/AppLayout";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -17,15 +17,17 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 const due = (s: Sale) => Math.max(0, s.total - s.amount_paid);
 
 export default function Credits() {
-  const { data: sales, isPending } = useSales();
+  // Queries only bills with a balance, straight from the database, so debts
+  // never fall out of view as the sales history grows.
+  const { data: sales, isPending } = useOutstandingSales();
   const pay = useRecordPayment();
   const [search, setSearch] = useState("");
   const [paying, setPaying] = useState<Sale | null>(null);
   const [amount, setAmount] = useState("");
   const [receipt, setReceipt] = useState<Sale | null>(null);
 
-  const credits = useMemo(() => (sales ?? []).filter((s) => due(s) > 0.01), [sales]);
-  const list = useMemo(() => { 
+  const credits = useMemo(() => sales ?? [], [sales]);
+  const list = useMemo(() => {
     const q = search.trim().toLowerCase(); 
     return credits.filter((s) => !q || (s.customers?.name ?? "").toLowerCase().includes(q) || (s.customers?.phone ?? "").includes(q)); 
   }, [credits, search]);
