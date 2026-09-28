@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { m } from "motion/react";
 import { Plus, Pencil, Trash2, Flower2, Gift, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { toast } from "sonner";
-import { useProducts, useRecipes, useBouquetAvailability, useCreateProduct, useUpdateProduct, useDeleteProduct, useSaveRecipe } from "@/api/products";
+import { useProducts, useRecipes, useBouquetAvailability, useCreateProduct, useUpdateProduct, useArchiveProduct, useSaveRecipe } from "@/api/products";
 import { useProfitMargins } from "@/api/analytics";
 import type { Product, ProductInput } from "@/api/types";
 import { PageHeader } from "@/components/layout/AppLayout";
@@ -28,7 +28,7 @@ export default function Inventory() {
   const { data: recipes } = useRecipes();
   const { data: availability } = useBouquetAvailability();
   const { data: margins, isPending: marginsPending } = useProfitMargins();
-  const create = useCreateProduct(); const update = useUpdateProduct(); const del = useDeleteProduct(); const saveRecipe = useSaveRecipe();
+  const create = useCreateProduct(); const update = useUpdateProduct(); const del = useArchiveProduct(); const saveRecipe = useSaveRecipe();
 
   const [form, setForm] = useState<ProductInput | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
@@ -51,7 +51,9 @@ export default function Inventory() {
     const opts = { onSuccess: () => { setForm(null); toast.success(editId ? "Updated" : "Added"); }, onError: (err: unknown) => toast.error(errorMessage(err)) };
     if (editId) update.mutate({ id: editId, ...form }, opts); else create.mutate(form, opts);
   };
-  const remove = (p: Product) => { if (confirm(`Delete ${displayName(p)}?`)) del.mutate(p.id, { onError: (err) => toast.error(errorMessage(err)), onSuccess: () => toast.success("Deleted") }); };
+  const remove = (p: Product) => { if (confirm(`Archive ${displayName(p)}?
+
+It disappears from billing and inventory, but past bills keep it for their records. Nothing is deleted.`)) del.mutate(p.id, { onError: (err) => toast.error(errorMessage(err)), onSuccess: () => toast.success("Archived") }); };
 
   const recipeInitial = (b: Product): BuilderResult => ({
     price: 0, label: "",
@@ -100,7 +102,7 @@ export default function Inventory() {
                     <td className="p-4 text-muted">{p.supplier || "—"}</td>
                     <td className="p-4"><div className="flex justify-end gap-1">
                       <button onClick={() => openEdit(p)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Edit"><Pencil className="w-4 h-4" /></button>
-                      <button onClick={() => remove(p)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => remove(p)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Archive"><Trash2 className="w-4 h-4" /></button>
                     </div></td>
                   </m.tr>
                 ))}
@@ -146,7 +148,7 @@ export default function Inventory() {
                   <Button variant="outline" size="sm" onClick={() => setRecipeFor(b)}>Edit Recipe</Button>
                   <div className="flex gap-1">
                     <button onClick={() => openEdit(b)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Edit"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => remove(b)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => remove(b)} className={cn(iconBtn, "hover:text-primary hover:bg-primary-soft")} aria-label="Archive"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               </m.div>

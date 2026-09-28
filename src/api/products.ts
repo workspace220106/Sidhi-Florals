@@ -14,7 +14,7 @@ function mapProduct(r: Record<string, unknown>): Product {
 }
 
 async function fetchProducts(): Promise<Product[]> {
-  const { data, error } = await supabase.from("products").select("*").order("name").order("variety");
+  const { data, error } = await supabase.from("products").select("*").is("archived_at", null).order("name").order("variety");
   if (error) throw error;
   return (data ?? []).map(mapProduct);
 }
@@ -80,11 +80,19 @@ export function useUpdateProduct() {
   });
 }
 
-export function useDeleteProduct() {
+/**
+ * Archives a product instead of deleting it. Past bills reference it for
+ * costing and reporting, so removing the row would quietly rewrite history.
+ * Archived products disappear from billing and inventory but stay intact.
+ */
+export function useArchiveProduct() {
   const inv = useInvalidateProducts();
   return useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from("products").delete().eq("id", id);
+      const { error } = await supabase
+        .from("products")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: inv,

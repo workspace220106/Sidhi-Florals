@@ -9,7 +9,7 @@ export function useCustomers() {
   return useQuery({
     queryKey: customerKeys.all,
     queryFn: async (): Promise<Customer[]> => {
-      const { data, error } = await supabase.from("customers").select("*").order("name");
+      const { data, error } = await supabase.from("customers").select("*").is("archived_at", null).order("name");
       if (error) throw error;
       return data ?? [];
     },
@@ -57,11 +57,18 @@ export function useUpdateCustomer() {
   });
 }
 
-export function useDeleteCustomer() {
+/**
+ * Archives a customer rather than deleting them, so their past bills keep a
+ * buyer and outstanding dues can still be chased.
+ */
+export function useArchiveCustomer() {
   const inv = useInvalidateCustomers();
   return useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from("customers").delete().eq("id", id);
+      const { error } = await supabase
+        .from("customers")
+        .update({ archived_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: inv,

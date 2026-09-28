@@ -11,7 +11,12 @@ export function RecentBillsTab({ onSelectSale }: { onSelectSale: (sale: Sale) =>
   const { data: sales, isPending } = useSales();
   const [search, setSearch] = useState("");
 
-  const filtered = (sales ?? []).filter((s) => {
+  // Scoped to today: the Sales page is the full ledger, this is the
+  // "what did I just bill?" shortcut sitting next to the till.
+  const today = new Date().toDateString();
+  const todays = (sales ?? []).filter((s) => new Date(s.date).toDateString() === today);
+
+  const filtered = todays.filter((s) => {
     const q = search.trim().toLowerCase();
     if (!q) return true;
     const matchId = String(s.id).includes(q) || padId(s.id).includes(q);
@@ -25,10 +30,10 @@ export function RecentBillsTab({ onSelectSale }: { onSelectSale: (sale: Sale) =>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-border">
         <div>
           <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground flex items-center gap-2">
-            <FileText className="w-6 h-6 text-primary" /> Generated Bills & Receipts
+            <FileText className="w-6 h-6 text-primary" /> Today’s Bills
           </h2>
           <p className="text-xs sm:text-sm text-muted mt-0.5">
-            View, print, download PDFs, or resend invoices on WhatsApp for recent transactions.
+            Bills raised today. The full history lives on the Sales page.
           </p>
         </div>
 
@@ -36,7 +41,7 @@ export function RecentBillsTab({ onSelectSale }: { onSelectSale: (sale: Sale) =>
           <SearchInput
             value={search}
             onChange={setSearch}
-            placeholder="Search bill #, customer, phone..."
+            placeholder="Search today’s bills..."
           />
         </div>
       </div>
@@ -66,7 +71,7 @@ export function RecentBillsTab({ onSelectSale }: { onSelectSale: (sale: Sale) =>
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-muted text-sm">
-                  No generated bills found.
+                  No bills raised today yet.
                 </td>
               </tr>
             ) : (
@@ -98,7 +103,7 @@ export function RecentBillsTab({ onSelectSale }: { onSelectSale: (sale: Sale) =>
                       </p>
                       {sale.customers?.phone && (
                         <p className="text-[11px] text-muted flex items-center gap-1 font-mono">
-                          <Phone className="w-3 h-3 text-emerald-600" /> {sale.customers.phone}
+                          <Phone className="w-3 h-3 text-primary" /> {sale.customers.phone}
                         </p>
                       )}
                     </td>
@@ -112,11 +117,11 @@ export function RecentBillsTab({ onSelectSale }: { onSelectSale: (sale: Sale) =>
                     </td>
                     <td className="p-3 text-right whitespace-nowrap">
                       {isPaid ? (
-                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-secondary-soft text-foreground border border-border">
                           Paid
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-primary-soft text-primary border border-primary-border">
                           Due: {formatCurrency(due)}
                         </span>
                       )}

@@ -130,7 +130,7 @@ export default function Billing() {
           items={[
             { value: "pos", label: "POS Catalog", icon: ShoppingBag },
             { value: "quick-bill", label: "Quick Generate Bill", icon: Zap },
-            { value: "recent-bills", label: "Recent Bills", icon: FileText },
+            { value: "recent-bills", label: "Today’s Bills", icon: FileText },
           ]}
         />
       </div>

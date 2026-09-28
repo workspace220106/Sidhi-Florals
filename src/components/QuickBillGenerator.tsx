@@ -270,7 +270,7 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
             </div>
             <div>
               <label className="text-xs font-bold text-foreground mb-1 flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp / Mobile Number
+                <Phone className="w-3.5 h-3.5 text-primary" /> WhatsApp / Mobile Number
               </label>
               <Input
                 type="tel"
@@ -370,7 +370,7 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
                       <button
                         type="button"
                         onClick={() => removeRow(row.id)}
-                        className="p-1.5 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-muted hover:text-primary hover:bg-primary-soft rounded-lg transition-colors cursor-pointer"
                         title="Remove row"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -406,7 +406,7 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
             />
             <div className="p-3 bg-secondary-soft rounded-xl border border-border text-xs text-muted space-y-1">
               <p className="font-semibold text-foreground flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp & PDF Ready
+                <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> WhatsApp & PDF Ready
               </p>
               <p>Generates an itemized printable PDF invoice and connects directly to WhatsApp.</p>
             </div>
@@ -465,9 +465,9 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
             </div>
 
             {balanceDue > 0.01 && (
-              <div className="flex justify-between items-center p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 text-xs sm:text-sm font-bold">
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-primary-soft border border-primary-border text-primary text-xs sm:text-sm font-bold">
                 <span className="flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-amber-600" /> Credit Balance Due
+                  <AlertCircle className="w-4 h-4 text-primary" /> Credit Balance Due
                 </span>
                 <span>{formatCurrency(balanceDue)}</span>
               </div>

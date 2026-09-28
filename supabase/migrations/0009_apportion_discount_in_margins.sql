@@ -1,0 +1,5 @@
+-- A bill-level discount lowers what was actually collected, but per-product
+-- reporting was still crediting each line its full list total. v_profit_margins
+-- and v_top_products now spread the discount across lines in proportion to
+-- their value, so product revenue/profit match the money that really came in.
+-- (Applied via Supabase; see those two view definitions.)

@@ -16,8 +16,9 @@ export interface BouquetAvailability { bouquet_id: number; can_make: number; sho
 
 export interface Customer {
   id: number; name: string; phone: string; business: string; address: string; notes: string; created_at: string;
+  archived_at: string | null;
 }
-export type CustomerInput = Omit<Customer, "id" | "created_at">;
+export type CustomerInput = Omit<Customer, "id" | "created_at" | "archived_at">;
 
 export interface SaleComponent { id: number; product_id: number | null; name: string; quantity: number; unit_cost: number }
 export interface SaleItem {

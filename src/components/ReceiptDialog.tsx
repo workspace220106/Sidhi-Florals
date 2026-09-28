@@ -297,7 +297,7 @@ export function ReceiptDialog({ sale, open, onOpenChange }: { sale: Sale | null;
 
           <Button
             variant="primary"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md hover:shadow-emerald-600/20"
+            className="w-full"
             onClick={shareOnWhatsApp}
             loading={busy === "share"}
             disabled={anyBusy && busy !== "share"}
@@ -366,7 +366,7 @@ export function ReceiptDialog({ sale, open, onOpenChange }: { sale: Sale | null;
                 </tr>
                 <tr>
                   <td colSpan={3} className="muted text-xs text-muted">Discount ({((discount / subtotal) * 100).toFixed(2)}%)</td>
-                  <td className="r text-right text-xs font-semibold text-red-600">-{formatCurrency(discount)}</td>
+                  <td className="r text-right text-xs font-semibold text-primary">-{formatCurrency(discount)}</td>
                 </tr>
               </>
             )}
@@ -380,8 +380,8 @@ export function ReceiptDialog({ sale, open, onOpenChange }: { sale: Sale | null;
             </tr>
             {due > 0.01 && (
               <tr>
-                <td colSpan={3} className="b font-bold text-amber-600">Balance due</td>
-                <td className="r text-right b font-bold text-amber-600">{formatCurrency(due)}</td>
+                <td colSpan={3} className="b font-bold text-primary">Balance due</td>
+                <td className="r text-right b font-bold text-primary">{formatCurrency(due)}</td>
               </tr>
             )}
           </tfoot>

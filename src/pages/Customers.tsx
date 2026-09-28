@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { m } from "motion/react";
 import { Plus, Pencil, Trash2, History, Phone, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { useCustomers, useCustomerSales, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from "@/api/customers";
+import { useCustomers, useCustomerSales, useCreateCustomer, useUpdateCustomer, useArchiveCustomer } from "@/api/customers";
 import type { Customer, CustomerInput } from "@/api/types";
 import { PageHeader } from "@/components/layout/AppLayout";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -18,7 +18,7 @@ const empty: CustomerInput = { name: "", phone: "", business: "", address: "", n
 export default function Customers() {
   const [search, setSearch] = useState("");
   const { data: customers, isPending } = useCustomers();
-  const create = useCreateCustomer(); const update = useUpdateCustomer(); const del = useDeleteCustomer();
+  const create = useCreateCustomer(); const update = useUpdateCustomer(); const del = useArchiveCustomer();
   const [form, setForm] = useState<CustomerInput | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [historyId, setHistoryId] = useState<number | null>(null);
@@ -62,7 +62,9 @@ export default function Customers() {
               <div className="flex gap-1">
                 <button onClick={() => setHistoryId(c.id)} className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors" aria-label="Purchase History"><History className="w-4 h-4" /></button>
                 <button onClick={() => openEdit(c)} className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors" aria-label="Edit Profile"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => { if (confirm(`Delete ${c.name}?`)) del.mutate(c.id, { onError: (e) => toast.error(errorMessage(e)) }); }} className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors" aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => { if (confirm(`Archive ${c.name}?
+
+Their past bills and any outstanding dues are kept. Nothing is deleted.`)) del.mutate(c.id, { onError: (e) => toast.error(errorMessage(e)) }); }} className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary-soft cursor-pointer transition-colors" aria-label="Archive"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
             
