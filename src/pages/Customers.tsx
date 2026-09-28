@@ -79,8 +79,8 @@ export default function Customers() {
       <Dialog open={!!form} onOpenChange={(o) => !o && setForm(null)} title={editId ? "Edit customer" : "Add customer"}>
         {form && (
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Full Name"><Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Meera Sharma" /></Field>
-            <Field label="Phone Number"><Input required inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="e.g. +91 98765 43210" /></Field>
+            <Field label="Full Name"><Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" /></Field>
+            <Field label="Phone Number"><Input required inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="10-digit mobile" /></Field>
             <Field label="Business / Event Category (optional)"><Input value={form.business} onChange={(e) => setForm({ ...form, business: e.target.value })} placeholder="Wedding Decorator, Temple, Hotel…" /></Field>
             <Field label="Address (optional)"><Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Studio or venue address" /></Field>
             <Field label="Notes (optional)"><Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Special preferences or delivery instructions" /></Field>

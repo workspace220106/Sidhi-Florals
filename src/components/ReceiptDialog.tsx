@@ -268,7 +268,7 @@ export function ReceiptDialog({ sale, open, onOpenChange }: { sale: Sale | null;
               <div className="flex gap-2">
                 <Input
                   type="tel"
-                  placeholder="e.g. 9876543210"
+                  placeholder="WhatsApp number"
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
                   className="h-8 text-xs bg-surface"

@@ -261,7 +261,7 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
             <div>
               <label className="text-xs font-bold text-foreground mb-1 block">Customer Full Name *</label>
               <Input
-                placeholder="e.g. Priya Sharma"
+                placeholder="Customer name"
                 value={newCustomerName}
                 onChange={(e) => setNewCustomerName(e.target.value)}
                 className="bg-surface text-sm"
@@ -274,7 +274,7 @@ export function QuickBillGenerator({ onBillGenerated }: { onBillGenerated: (sale
               </label>
               <Input
                 type="tel"
-                placeholder="e.g. 9876543210"
+                placeholder="WhatsApp number"
                 value={newCustomerPhone}
                 onChange={(e) => setNewCustomerPhone(e.target.value)}
                 className="bg-surface text-sm"
