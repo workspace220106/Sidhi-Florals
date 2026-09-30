@@ -235,8 +235,8 @@ export default function Billing() {
             </section>
 
             {/* Right Bill Drawer / Aside */}
-            <aside className={cn("w-full lg:w-[320px] xl:w-[360px] 2xl:w-[400px] shrink-0 card flex-col lg:h-full overflow-hidden border-t-8 border-t-primary shadow-xl", mobileTab === "cart" ? "flex" : "hidden lg:flex")}>
-              <div className="p-3.5 sm:p-4 border-b border-border bg-secondary-soft/50">
+            <aside className={cn("w-full lg:w-[320px] xl:w-[360px] 2xl:w-[400px] shrink-0 card flex flex-col lg:h-full overflow-hidden border-t-8 border-t-primary shadow-xl", mobileTab === "cart" ? "flex" : "hidden lg:flex")}>
+              <div className="p-3.5 sm:p-4 border-b border-border bg-secondary-soft/50 shrink-0">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 text-foreground">
                   <ShoppingBag className="text-primary w-5 h-5" /> Active Bill
                 </h2>
@@ -250,10 +250,10 @@ export default function Billing() {
               </div>
 
               {/* Cart Item Rows */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-[220px]">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5">
                 <AnimatePresence initial={false}>
                   {cart.length === 0 ? (
-                    <div key="empty" className="h-full flex flex-col items-center justify-center text-muted p-6 text-center">
+                    <div key="empty" className="h-full min-h-[140px] flex flex-col items-center justify-center text-muted p-6 text-center">
                       <ShoppingBag className="w-14 h-14 mb-2.5 text-muted/30 stroke-1" />
                       <p className="font-semibold text-sm">Bill is empty.</p>
                       <p className="text-xs text-muted mt-0.5">Tap flowers or bouquets on the left to add items.</p>
@@ -299,7 +299,7 @@ export default function Billing() {
               </div>
 
               {/* Bill Calculation & Checkout Footer */}
-              <div className="p-3.5 sm:p-4 bg-secondary-soft/70 border-t border-border space-y-3">
+              <div className="p-3.5 sm:p-4 bg-secondary-soft/70 border-t border-border space-y-3 shrink-0">
                 <div className="flex justify-between items-center">
                   <span className="text-muted font-semibold text-xs sm:text-sm">Total Amount</span>
                   <div ref={totalRef} className="flex items-center gap-1 border-b-2 border-primary/50 focus-within:border-primary transition-colors">
